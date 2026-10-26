@@ -6,7 +6,7 @@ from uuid import UUID, uuid4
 app = FastAPI()
 
 class Book(BaseModel):
-    id : int
+    id : str
     title : str
     author: str
     year : int
@@ -53,9 +53,22 @@ def get_books(id: UUID):
         return {"error":"Book not found"}
     return book
 
-@app.get("/book/{id}")
+@app.post("/book")
 def post_books(book_in:Book_create):
     book = Book(
-        id=str(uuid4()),
-    )
+        id=str(uuid4()), **book_in.model_dump()
+        )
+    books[book.id] = book
+    return Response(message = "Book added successfully", data= book)
 
+@app.put("/books/{id}")
+def update_book(id:UUID, book_in:Bookupdate):
+    book = books.get(str(id))
+    if not book:
+        return{"error": "Book not found"}
+    book.title = book_in.title
+    book.pages = book_in.pages
+    book.language = book_in.language
+
+    return Response(message="book update successfully")
+_
